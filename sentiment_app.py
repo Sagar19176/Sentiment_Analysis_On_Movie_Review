@@ -19,6 +19,7 @@ st.set_page_config(
 )
 
 # --- CUSTOM STYLING ---
+# UPDATED: Fixed colors, opacity, and text definition for metric cards
 st.markdown("""
     <style>
     .main {
@@ -83,54 +84,64 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 1. DATA COLLECTION MODULE (Synthetic Data for Demo Portability) ---
+# --- 1. DATA COLLECTION MODULE ---
 @st.cache_data
 def load_data():
     """
-    Loads a dataset. ideally this would load 'IMDB_Dataset.csv'.
-    For this 'ready-to-serve' demo, we allow it to run without external files
-    by using a built-in mini-dataset if the file isn't found.
+    Loads the IMDB dataset. 
+    If the CSV file exists, it uses that. Otherwise, it uses synthetic data.
     """
-    # Synthetic dataset to ensure the code runs immediately for your presentation
-    data = {
-        'review': [
-            "I absolutely loved this movie! The acting was fantastic.",
-            "What a waste of time. The plot was terrible.",
-            "A masterpiece. Beautifully filmed and directed.",
-            "I fell asleep halfway through. Boring.",
-            "Great visual effects but the story was lacking.",
-            "Worst movie I have ever seen. Do not watch.",
-            "An emotional rollercoaster. Highly recommended.",
-            "The characters were shallow and unlikable.",
-            "Brilliant performance by the lead actor.",
-            "Script was weak and predictable.",
-            "I enjoyed every minute of it. Pure entertainment.",
-            "Disappointing conclusion to the trilogy.",
-            "Funny, witty, and charming.",
-            "Awful directing and poor editing.",
-            "A classic that will be remembered for years.",
-            "Horrible pacing, it felt like it went on forever.",
-            "Truly inspiring and heartwarming.",
-            "I regret paying money to see this.",
-            "Cinematography was stunning, 10/10.",
-            "Garbage. Absolute garbage.",
-            "One of the best films of the year.",
-            "Complete disaster.",
-            "Thrilling from start to finish.",
-            "Not worth the hype.",
-            "A solid 8/10, good fun.",
-            "Terrible script writing."
-        ] * 20, 
-        'sentiment': [
-            "positive", "negative", "positive", "negative", "negative", "negative",
-            "positive", "negative", "positive", "negative", "positive", "negative",
-            "positive", "negative", "positive", "negative", "positive", "negative",
-            "positive", "negative",
-            "positive", "negative", "positive", "negative", "positive", "negative"
-        ] * 20
-    }
-    df = pd.DataFrame(data)
-    return df
+    try:
+        # READ THE CSV FILE
+        # We use only the first 5,000 rows to keep training fast for the presentation
+        # If you want all 50k, remove 'nrows=5000' (but it will take ~30s to train)
+        df = pd.read_csv('IMDB_Dataset.csv').head(5000)
+        
+        # Standardize column names just in case
+        df.columns = [c.lower() for c in df.columns] 
+        
+        # Ensure we have the right columns (rename if necessary)
+        if 'review' not in df.columns or 'sentiment' not in df.columns:
+             st.error("Error: Dataset must have 'review' and 'sentiment' columns.")
+             return pd.DataFrame()
+             
+        return df
+
+    except FileNotFoundError:
+        st.warning("⚠️ 'IMDB_Dataset.csv' not found. Using synthetic demo data instead.")
+        
+        # Fallback Synthetic Data
+        data = {
+            'review': [
+                "I absolutely loved this movie! The acting was fantastic.",
+                "What a waste of time. The plot was terrible.",
+                "A masterpiece. Beautifully filmed and directed.",
+                "I fell asleep halfway through. Boring.",
+                "Great visual effects but the story was lacking.",
+                "Worst movie I have ever seen. Do not watch.",
+                "An emotional rollercoaster. Highly recommended.",
+                "The characters were shallow and unlikable.",
+                "Brilliant performance by the lead actor.",
+                "Script was weak and predictable.",
+                "I enjoyed every minute of it. Pure entertainment.",
+                "Disappointing conclusion to the trilogy.",
+                "Funny, witty, and charming.",
+                "Awful directing and poor editing.",
+                "A classic that will be remembered for years.",
+                "Horrible pacing, it felt like it went on forever.",
+                "Truly inspiring and heartwarming.",
+                "I regret paying money to see this.",
+                "Cinematography was stunning, 10/10.",
+                "Garbage. Absolute garbage."
+            ] * 5, 
+            'sentiment': [
+                "positive", "negative", "positive", "negative", "negative", "negative",
+                "positive", "negative", "positive", "negative", "positive", "negative",
+                "positive", "negative", "positive", "negative", "positive", "negative",
+                "positive", "negative"
+            ] * 5
+        }
+        return pd.DataFrame(data)
 
 # --- 2. PREPROCESSING MODULE ---
 def clean_text(text):
@@ -317,5 +328,4 @@ elif menu == "About":
 
 # Footer
 st.markdown("---")
-
 st.markdown(f"<center>Developed by Sagar Kumar | © 2025 MRSPTU</center>", unsafe_allow_html=True)
