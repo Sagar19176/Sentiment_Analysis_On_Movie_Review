@@ -19,7 +19,6 @@ st.set_page_config(
 )
 
 # --- CUSTOM STYLING ---
-# UPDATED: Fixed colors, opacity, and text definition for metric cards
 st.markdown("""
     <style>
     .main {
@@ -318,4 +317,5 @@ elif menu == "About":
 
 # Footer
 st.markdown("---")
+
 st.markdown(f"<center>Developed by Sagar Kumar | © 2025 MRSPTU</center>", unsafe_allow_html=True)
